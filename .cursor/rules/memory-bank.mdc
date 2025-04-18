@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# .cursor-rules
+version: 1
+
+metadata:
+  name: Persistent Memory Bank Rules
+  description: Instructs Cursor to create and maintain a memory bank folder for preserving context across sessions.
+
+context:
+  - This project requires long-term context persistence for smoother development continuity.
+  - All critical design, architectural, and functional decisions should be recorded and referenced from a centralized memory system.
+  - The memory bank must stay synchronized with all major updates in source code, architecture, and documentation.
+
+rules:
+  - Generate a folder named `.memory-bank/` at the root of the project.
+  - Create separate files inside `.memory-bank/` for:
+      - `architecture.md` — summary of system architecture and diagrams
+      - `api-design.md` — current API endpoints and expected behaviors
+      - `data-models.md` — key schemas and database models
+      - `services.md` — responsibilities and communication flow between internal services
+      - `tech-stack.md` — chosen technologies and justifications
+      - `change-log.md` — running log of updates in architecture or implementation
+  - On each commit or significant change, update the relevant memory files with:
+      - New features or changes
+      - Deprecated components
+      - Configuration changes
+  - If context is updated via chat or direct edits (e.g., requirements, bug fixes), append the changes to the appropriate file with a timestamp.
+  - Reference `.memory-bank/` files in future prompt completions for consistency and recall.
+  - Periodically (e.g., daily or on build), re-validate that `.memory-bank/` contents align with the actual code and documentation.
+
+files:
+  - .memory-bank/
+      - architecture.md
+      - api-design.md
+      - data-models.md
+      - services.md
+      - tech-stack.md
+      - change-log.md
+
+notes:
+  - The `.memory-bank/` folder must be version-controlled.
+  - Avoid duplicating information across memory files — cross-link when needed.
+  - Prefer markdown format with bullet points, code snippets, and diagrams when possible.
+  - The memory system should be automatically readable by both the agent and humans.

@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# .cursor-rules
+version: 1
+
+metadata:
+  name: Notification Service Cursor Rules
+  description: Rules and context derived from the Notification Service Technical Implementation document to guide coding agents during development.
+
+context:
+  - All features must align with the architecture and goals described in [notification-service-tech-impl.md](mdc:notification-service-tech-impl.md).
+  - Prioritize reliability, scalability, and observability in all system components.
+  - Use Node.js (v18+), NestJS, MongoDB, Redis, and Kafka as the core technology stack.
+  - Follow clean code principles and modular design as suggested in the NestJS framework usage.
+
+rules:
+  - Ensure all notifications support priority levels and retry mechanisms.
+  - API routes should be defined in the NestJS controller format.
+  - Push notification logic must be abstracted behind a service layer.
+  - Kafka topics must be named clearly and consistently across services.
+  - Retry mechanisms should use backoff strategies and be handled via a RetryManager.
+  - Observability: integrate logging (e.g., Winston or Pino), metrics (e.g., Prometheus), and alerting.
+  - Database schemas must accommodate different types of notifications with metadata.
+  - Redis is used for caching device states and rate limiting.
+  - Do not bypass authentication or authorization layers defined in the Authentication Service.
+  - Every critical path (e.g., payment-related notifications) must be idempotent and fail-safe.
+
+files:
+  - src/
+      - main.ts
+      - app.module.ts
+      - modules/
+          - notification/
+              - notification.module.ts
+              - notification.service.ts
+              - notification.controller.ts
+          - device/
+              - device.module.ts
+              - device.service.ts
+          - retry/
+              - retry.module.ts
+              - retry.service.ts
+          - queue/
+              - kafka.service.ts
+              - redis.service.ts
+          - auth/
+              - auth.middleware.ts
+              - auth.service.ts
+          - monitoring/
+              - metrics.service.ts
+              - logs.service.ts
+
+notes:
+  - Use NestJS decorators for routing, validation, and guards.
+  - Write tests using Jest; aim for at least 80% code coverage.
+  - Reference the component diagram when establishing data flow or service interaction.
