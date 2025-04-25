@@ -5,5 +5,23 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "setupFilesAfterEnv": ["./jest-e2e.setup.js"],
+  "moduleNameMapper": {
+    "^src/(.*)$": "<rootDir>/../src/$1"
+  },
+  "coverageDirectory": "../coverage-e2e",
+  "verbose": true,
+  "reporters": [
+    "default",
+    [
+      "jest-html-reporters",
+      {
+        "publicPath": "./coverage-e2e/html-report",
+        "filename": "e2e-report.html",
+        "pageTitle": "Notification Service E2E Test Report",
+        "expand": true
+      }
+    ]
+  ]
 }

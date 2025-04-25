@@ -25,7 +25,7 @@ export class NotificationService {
    */
   async create(createNotificationDto: CreateNotificationDto): Promise<{ notification_id: string, status: string }> {
     this.logger.log(`Creating notification for user ${createNotificationDto.recipient.user_id}`);
-    
+
     // Check if notification with same idempotency key exists
     const existingNotification = await this.notificationModel.findOne({
       idempotency_key: createNotificationDto.idempotency_key,
@@ -34,7 +34,7 @@ export class NotificationService {
     if (existingNotification) {
       this.logger.log(`Notification with idempotency key ${createNotificationDto.idempotency_key} already exists`);
       return {
-        notification_id: existingNotification._id.toString(),
+        notification_id: existingNotification._id?.toString() || '',
         status: 'accepted',
       };
     }
@@ -56,7 +56,7 @@ export class NotificationService {
     await this.queueNotification(notification);
 
     return {
-      notification_id: notification._id.toString(),
+      notification_id: notification._id?.toString() || '',
       status: 'accepted',
     };
   }
@@ -66,21 +66,21 @@ export class NotificationService {
    */
   private async queueNotification(notification: Notification): Promise<void> {
     const queueOptions = this.getQueueOptionsForPriority(notification.priority);
-    
+
     if (notification.scheduled_at && new Date(notification.scheduled_at) > new Date()) {
       // For scheduled notifications, add delay
       const delay = new Date(notification.scheduled_at).getTime() - Date.now();
       await this.notificationsQueue.add(
-        'process', 
-        { notification_id: notification._id },
+        'process',
+        { notification_id: notification._id?.toString() || '' },
         { ...queueOptions, delay }
       );
       this.logger.log(`Scheduled notification ${notification._id} for ${notification.scheduled_at}`);
     } else {
       // For immediate notifications
       await this.notificationsQueue.add(
-        'process', 
-        { notification_id: notification._id },
+        'process',
+        { notification_id: notification._id?.toString() || '' },
         queueOptions
       );
       this.logger.log(`Queued notification ${notification._id} for immediate processing`);
@@ -111,11 +111,11 @@ export class NotificationService {
   async findById(id: string): Promise<Notification> {
     this.logger.debug(`Finding notification by ID ${id}`);
     const notification = await this.notificationModel.findById(id).exec();
-    
+
     if (!notification) {
       throw new NotFoundException(`Notification with ID ${id} not found`);
     }
-    
+
     return notification;
   }
 
@@ -141,7 +141,7 @@ export class NotificationService {
     errorMessage?: string,
   ): Promise<DeliveryAttempt> {
     this.logger.debug(`Recording delivery attempt for notification ${notificationId} to device ${deviceId}`);
-    
+
     // Find the highest attempt number for this notification and device
     const lastAttempt = await this.deliveryAttemptModel.findOne({
       notification_id: notificationId,
@@ -175,7 +175,7 @@ export class NotificationService {
     delivery_attempts: any[];
   }> {
     this.logger.debug(`Getting delivery status for notification ${notificationId}`);
-    
+
     const notification = await this.findById(notificationId);
     const deliveryAttempts = await this.deliveryAttemptModel.find({
       notification_id: notificationId,
@@ -183,13 +183,13 @@ export class NotificationService {
 
     // Calculate overall status based on delivery attempts
     let overallStatus = 'pending';
-    
+
     if (deliveryAttempts.length > 0) {
       const statusCounts = deliveryAttempts.reduce((acc, attempt) => {
         acc[attempt.status] = (acc[attempt.status] || 0) + 1;
         return acc;
       }, {});
-      
+
       if (statusCounts[NotificationStatus.DELIVERED]) {
         overallStatus = 'delivered';
       } else if (statusCounts[NotificationStatus.FAILED] === deliveryAttempts.length) {
@@ -200,15 +200,15 @@ export class NotificationService {
     }
 
     // Get latest attempt time as processed time
-    const latestAttempt = deliveryAttempts.length > 0 
-      ? deliveryAttempts[deliveryAttempts.length - 1] 
+    const latestAttempt = deliveryAttempts.length > 0
+      ? deliveryAttempts[deliveryAttempts.length - 1]
       : null;
 
     return {
-      notification_id: notification._id.toString(),
+      notification_id: notification._id?.toString() || '',
       status: overallStatus,
-      created_at: notification.created_at,
-      processed_at: latestAttempt ? latestAttempt.attempted_at : null,
+      created_at: notification.created_at || new Date(),
+      processed_at: latestAttempt?.attempted_at || new Date(),
       delivery_attempts: deliveryAttempts.map(attempt => ({
         device_id: attempt.device_id,
         attempt_number: attempt.attempt_number,
@@ -217,4 +217,4 @@ export class NotificationService {
       })),
     };
   }
-} 
+}

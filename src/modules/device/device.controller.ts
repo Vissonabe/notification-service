@@ -1,14 +1,14 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  Get, 
-  Param, 
-  Put, 
-  Delete, 
-  HttpCode, 
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  Delete,
+  HttpCode,
   HttpStatus,
-  Logger 
+  Logger
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { DeviceService } from './device.service';
@@ -24,27 +24,27 @@ export class DeviceController {
 
   @Post()
   @ApiOperation({ summary: 'Register a new device or update an existing one' })
-  @ApiResponse({ 
-    status: HttpStatus.CREATED, 
+  @ApiResponse({
+    status: HttpStatus.CREATED,
     description: 'Device successfully registered',
-    type: Device 
+    type: Device
   })
   async registerDevice(@Body() registerDeviceDto: RegisterDeviceDto): Promise<{ device_id: string, status: string }> {
     this.logger.log('Register device request received');
     const device = await this.deviceService.registerDevice(registerDeviceDto);
-    return { 
-      device_id: device._id.toString(), 
-      status: 'registered' 
+    return {
+      device_id: device._id ? device._id.toString() : '',
+      status: 'registered'
     };
   }
 
   @Get('user/:userId')
   @ApiOperation({ summary: 'Get all devices for a user' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'List of devices for the user',
-    type: [Device] 
+    type: [Device]
   })
   async getUserDevices(@Param('userId') userId: string): Promise<Device[]> {
     this.logger.log(`Get devices for user ${userId}`);
@@ -54,14 +54,14 @@ export class DeviceController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a device by ID' })
   @ApiParam({ name: 'id', description: 'Device ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Device found',
-    type: Device 
+    type: Device
   })
-  @ApiResponse({ 
-    status: HttpStatus.NOT_FOUND, 
-    description: 'Device not found' 
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Device not found'
   })
   async getDevice(@Param('id') id: string): Promise<Device> {
     this.logger.log(`Get device ${id}`);
@@ -71,17 +71,17 @@ export class DeviceController {
   @Put(':id/preferences')
   @ApiOperation({ summary: 'Update notification preferences for a device' })
   @ApiParam({ name: 'id', description: 'Device ID' })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Preferences updated',
-    type: Device 
+    type: Device
   })
-  @ApiResponse({ 
-    status: HttpStatus.NOT_FOUND, 
-    description: 'Device not found' 
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Device not found'
   })
   async updatePreferences(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() preferences: any
   ): Promise<Device> {
     this.logger.log(`Update preferences for device ${id}`);
@@ -92,16 +92,16 @@ export class DeviceController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a device' })
   @ApiParam({ name: 'id', description: 'Device ID' })
-  @ApiResponse({ 
-    status: HttpStatus.NO_CONTENT, 
-    description: 'Device deleted' 
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Device deleted'
   })
-  @ApiResponse({ 
-    status: HttpStatus.NOT_FOUND, 
-    description: 'Device not found' 
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Device not found'
   })
   async deleteDevice(@Param('id') id: string): Promise<void> {
     this.logger.log(`Delete device ${id}`);
     return this.deviceService.delete(id);
   }
-} 
+}

@@ -5,14 +5,21 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with verbose logging
+RUN npm ci --verbose
+
+# Copy tsconfig and other config files
+COPY tsconfig*.json ./
+COPY eslint.config.mjs ./
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with verbose output
+RUN npm run build || (echo "Build failed. Checking for errors:" && ls -la && cat tsconfig.json && exit 1)
+
+# Verify build output
+RUN ls -la dist || (echo "dist directory not found or empty" && exit 1)
 
 # Remove development dependencies
 RUN npm prune --production
@@ -35,4 +42,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "dist/main"] 
+CMD ["node", "dist/src/main"]

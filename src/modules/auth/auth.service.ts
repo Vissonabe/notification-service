@@ -14,15 +14,19 @@ export class AuthService {
   async validateToken(token: string): Promise<any> {
     try {
       const jwtSecret = this.configService.get<string>('JWT_SECRET');
-      
+
       if (!jwtSecret) {
+        this.logger.error('Token validation failed: JWT_SECRET is not defined');
         throw new Error('JWT_SECRET is not defined');
       }
-      
+
       const payload = jwt.verify(token, jwtSecret);
       return payload;
     } catch (error) {
       this.logger.error(`Token validation failed: ${error.message}`);
+      if (error.message === 'JWT_SECRET is not defined') {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid token');
     }
   }
@@ -33,18 +37,18 @@ export class AuthService {
   generateToken(userId: string, role: string = 'user'): string {
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
     const expiresIn = this.configService.get<string>('JWT_EXPIRATION') || '1h';
-    
+
     if (!jwtSecret) {
       throw new Error('JWT_SECRET is not defined');
     }
-    
+
     return jwt.sign(
-      { 
+      {
         sub: userId,
         role,
       },
       jwtSecret,
-      { expiresIn }
+      { expiresIn } as jwt.SignOptions
     );
   }
-} 
+}
